@@ -6,11 +6,19 @@ import config from 'config';
 import redisClient from './utils/connectRedis';
 import AppError from './utils/appError';
 import { setupLogger } from './logging/morgan';
+import morgan from 'morgan';
+import validateEnv from './utils/validateEnvs';
+import authRouter from './routes/auth.routes';
 
+validateEnv();
 const app = express();
 
 app.use(express.json({ limit: '10kb' }));
 
+// 2. Logger
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 setupLogger(app);
 
 app.use(cookieParser());
@@ -24,7 +32,7 @@ app.use(
 
 // ROUTES
 
-app.use('/api/v1/auth');
+app.use('/api/v1/auth', authRouter);
 
 // HEALTH CHECKER
 app.get('/api/healthchecker', async (_, res: Response) => {
